@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>susie</title>
+</head>
+<body>
+    <script>
+        var source = new EventSource('/plain');
+        source.onmessage = function (event) {
+            console.log(event);
+        };
+        source.onopen = function (event) {
+            console.log('open');
+        };
+        source.onerror = function (e) {
+            console.log(e);
+        };
+
+        var source2 = new EventSource('/stream');
+        source2.addEventListener('update', function (event) {
+            console.log(event);
+        });
+        source2.onopen = function (event) {
+            console.log('open');
+        };
+        source2.onerror = function (e) {
+            console.log(e);
+        };
+    </script>
+</body>
+</html>
