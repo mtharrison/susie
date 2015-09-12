@@ -4,7 +4,7 @@
   "description": "Server-sent events with hapi",
   "main": "lib/index.js",
   "scripts": {
-    "test": "lab -a code -t 100 -L\""
+    "test": "lab -a code -t 100 -L"
   },
   "repository": {
     "type": "git",
@@ -24,7 +24,9 @@
   },
   "homepage": "https://github.com/mtharrison/susie#readme",
   "devDependencies": {
+    "code": "^1.5.0",
     "hapi": "^10.0.0",
-    "inert": "^3.0.1"
+    "inert": "^3.0.1",
+    "lab": "^5.16.1"
   }
 }

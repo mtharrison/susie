@@ -26,7 +26,7 @@ server.register([require('inert'), require('..')], function (err) {
         path: '/plain',
         handler: function (request, reply) {
 
-            reply.event({ id: 1, data: 'my data'});
+            reply.event({ id: 1, data: 'my data' });
 
             setTimeout(function () {
 
@@ -41,6 +41,7 @@ server.register([require('inert'), require('..')], function (err) {
     var i = 0;
 
     setInterval(function () {
+
         i++;
         externalSource.write(i.toString());
     }, 100);
