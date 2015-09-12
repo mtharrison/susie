@@ -1,0 +1,26 @@
+{
+  "name": "susie",
+  "version": "0.0.0",
+  "description": "Server-sent events with hapi",
+  "main": "index.js",
+  "scripts": {
+    "test": "lab -a code -t 100 -L\""
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mtharrison/susie.git"
+  },
+  "keywords": [
+    "sse",
+    "hapi",
+    "realtime",
+    "server-sent",
+    "streaming"
+  ],
+  "author": "Matt Harrison",
+  "license": "BSD-3-Clause",
+  "bugs": {
+    "url": "https://github.com/mtharrison/susie/issues"
+  },
+  "homepage": "https://github.com/mtharrison/susie#readme"
+}
