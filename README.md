@@ -56,7 +56,7 @@ A really nice way to provide an EventSource is using a ReadableStream. This is r
 ```javascript
 server.route({
     method: 'GET',
-    path: '/stream',
+    path: '/',
     handler: function (request, reply) {
 
         var Readable = require('stream').Readable;
