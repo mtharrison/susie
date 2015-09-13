@@ -86,6 +86,9 @@ server.route({
     }
 });
 ```
+
+![http://cl.ly/d5XT/Screen%20Shot%202015-09-13%20at%2015.50.25.png](http://cl.ly/d5XT/Screen%20Shot%202015-09-13%20at%2015.50.25.png)
+
 ## Considerations
 
 #### How do I finish a SSE stream for good?
