@@ -1,4 +1,5 @@
-# susie [![Build Status](https://travis-ci.org/mtharrison/susie.svg)](https://travis-ci.org/mtharrison/susie)
+# SuSiE - Server-Sent Events with hapi
+[![Build Status](https://travis-ci.org/mtharrison/susie.svg)](https://travis-ci.org/mtharrison/susie)
 
 This is a plugin that adds simple Server-Sent Events (aka EventSource) capabilities to hapi. It decorates the `reply()` interface with a new method `reply.event()`. You can send individual events as objects, or you can simply pass a stream and some options and susie will make things work as you expect.
 
@@ -53,21 +54,21 @@ If any of your datum are objects, they will be stringified for you. Make sure to
 A really nice way to provide an EventSource is using a ReadableStream. This is really simple with Susie. Just call `reply.event(stream)`. The stream should not be in `objectMode`:
 
 ```javascript
-var externalSource = new PassThrough();
-var i = 0;
-
-setInterval(function () {
-
-    i++;
-    externalSource.write(i.toString());
-}, 100);
-
 server.route({
     method: 'GET',
     path: '/',
     handler: function (request, reply) {
 
-        reply.event(stream);
+        var Readable = require('stream').Readable;
+        var rs = Readable();
+
+        var c = 97;
+        rs._read = function () {
+            rs.push(String.fromCharCode(c++));
+            if (c > 'z'.charCodeAt(0)) rs.push(null);
+        };
+
+        reply.event(rs);
     }
 });
 ```
@@ -87,9 +88,9 @@ server.route({
 ```
 ## Considerations
 
-#### How do I finish a SSE stream?
+#### How do I finish a SSE stream for good?
 
-In the SSE spec, it says that when the HTTP response ends, the browser will try to reconnect, sending another request to the endpoint. You may want this. Or you may really want to stop to the events being streamed.
+In the SSE spec, it says that when the HTTP response ends, the browser will try to reconnect, sending another request to the endpoint. You may want this. Or you may really want to stop to the events being streamed altogether.
 
 When you call `reply.event(null)` or your stream emits its `end` event, the HTTP response will conclude. However, susie will send one last event to the browser before it closes. You should listen for this `end` event in your client code and close the EventSource, before the browser attempts to reconnect:
 
