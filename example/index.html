@@ -8,22 +8,26 @@
     <script>
         var source = new EventSource('/plain');
         source.onmessage = function (event) {
-            console.log(event);
         };
         source.onopen = function (event) {
             console.log('open');
         };
+        source.addEventListener('end', function (event) {
+            this.close();
+        });
         source.onerror = function (e) {
             console.log(e);
         };
 
         var source2 = new EventSource('/stream');
         source2.addEventListener('update', function (event) {
-            console.log(event);
         });
         source2.onopen = function (event) {
             console.log('open');
         };
+        source2.addEventListener('end', function (event) {
+            this.close();
+        });
         source2.onerror = function (e) {
             console.log(e);
         };

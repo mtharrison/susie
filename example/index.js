@@ -31,25 +31,30 @@ server.register([require('inert'), require('..')], function (err) {
             setTimeout(function () {
 
                 reply.event({ id: 2, data: { a: 1 } });
+                reply.event(null);
             }, 500);
         }
     });
 
     // stream-mode: just pass a stream
 
-    var externalSource = new PassThrough();
-    var i = 0;
-
-    setInterval(function () {
-
-        i++;
-        externalSource.write(i.toString());
-    }, 100);
-
     server.route({
         method: 'GET',
         path: '/stream',
         handler: function (request, reply) {
+
+            var externalSource = new PassThrough();
+            var i = 0;
+
+            var timer = setInterval(function () {
+
+                i++;
+                externalSource.write(i.toString());
+                if (i >= 20) {
+                    externalSource.end();
+                    clearInterval(timer);
+                }
+            }, 100);
 
             var j = 0;
             var generateId = function (chunk) {
