@@ -11,7 +11,7 @@ This is a plugin that adds simple Server-Sent Events (aka EventSource) capabilit
 
 You probably already know this but install it with: `npm install --save susie`
 
-##Usage
+## Usage
 
 First load and register the plugin:
 
