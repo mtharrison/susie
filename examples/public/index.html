@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>susie</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react/0.13.3/react.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react/0.13.3/JSXTransformer.js"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="app"></div>
+
+    <script type="text/jsx">
+
+        var App = React.createClass({
+            render: function () {
+
+                return (
+                  <div>
+                    <div className={'stock ' + (this.props.order === 'BUY' ? 'buy' : 'sell')}>
+                      <div className="stock-info">
+                        <div className="stock-name">
+                            MYSTOCK
+                        </div>
+                        <div className="stock-price">
+                            {this.props.price}
+                        </div>
+                        <div className="stock-order">
+                            {this.props.order}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                );
+            }
+        });
+
+        var render = function (price) {
+
+            React.render(<App price={price} order={price < 550 ? 'BUY' : 'SELL'}/>, document.getElementById('app'));
+        };
+
+        var source = new EventSource('/stocks');
+
+        source.addEventListener('update', function (message) {
+
+            render(message.data);
+        });
+    </script>
+</body>
+</html>
