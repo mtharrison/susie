@@ -31,7 +31,7 @@
 
                 return (
                   <div>
-                    <div className={'stock ' + (this.props.stock.order === 'BUY' ? 'buy' : 'sell')}>
+                    <div className={'stock ' + this.props.stock.order.toLowerCase()}>
                       <div className="stock-info">
                         <div className="stock-name">
                             {this.props.stock.name}
