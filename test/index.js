@@ -142,7 +142,38 @@ describe('susie', function () {
         server.inject('http://localhost:4000/', function (res) {
 
             expect(res.headers['content-type']).to.equal('text/event-stream; charset=utf-8');
-            expect(res.payload).to.equal('id: 1\r\ndata: abcdef\r\nevent: message\r\n\r\nid: 2\r\ndata: ghijkl\r\nevent: message\r\n\r\n');
+            expect(res.payload).to.equal('id: 1\r\ndata: abcdef\r\n\r\nid: 2\r\ndata: ghijkl\r\n\r\n');
+            done();
+        });
+    });
+
+    it('Allows sending a stream of buffers', function (done) {
+
+        var stream = new PassThrough();
+
+        setTimeout(function () {
+
+            stream.write(new Buffer('abcdef'));
+            setTimeout(function () {
+
+                stream.write(new Buffer('ghijkl'));
+                stream.end();
+            }, 100);
+        }, 100);
+
+        server.route([{
+            method: 'GET',
+            path: '/',
+            handler: function (request, reply) {
+
+                reply.event(stream);
+            }
+        }]);
+
+        server.inject('http://localhost:4000/', function (res) {
+
+            expect(res.headers['content-type']).to.equal('text/event-stream; charset=utf-8');
+            expect(res.payload).to.equal('id: 1\r\ndata: abcdef\r\n\r\nid: 2\r\ndata: ghijkl\r\n\r\n');
             done();
         });
     });
@@ -199,7 +230,7 @@ describe('susie', function () {
 
                 var generateId = function (chunk) {
 
-                    return new Buffer(chunk).toString('base64');
+                    return chunk.toString('base64');
                 };
 
                 reply.event(stream, null, { event: 'update', generateId: generateId });
