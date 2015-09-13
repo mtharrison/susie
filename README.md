@@ -3,6 +3,8 @@
 
 _This package is still pre 1.0 and APIs may change drastically. Please help out with feedback, suggestions or PRs._
 
+![](http://cl.ly/image/403X2e1R2T29/Untitled3.gif)
+
 This is a plugin that adds simple Server-Sent Events (aka EventSource) capabilities to hapi. It decorates the `reply()` interface with a new method `reply.event()`. You can send individual events as objects, or you can simply pass a stream and some options and SuSiE will make things work as you expect.
 
 You probably already know this but install it with: `npm install --save susie`
@@ -53,7 +55,7 @@ If any of your datum are objects, they will be stringified for you. Make sure to
 
 #### With a readable stream
 
-A really nice way to provide an EventSource is using a ReadableStream. This is really simple with SuSiE. Just call `reply.event(stream)`. The stream should not be in `objectMode`:
+A really nice way to provide an EventSource is using a ReadableStream. This is really simple with SuSiE. Just call `reply.event(stream)`:
 
 ```javascript
 server.route({
@@ -90,6 +92,9 @@ server.route({
     }
 });
 ```
+**Object mode streams**
+
+If the stream is in `objectMode`, each object that comes off the stream will be stringified and the resulting string will be used as the `data` parameter. See example under `examples` for example.
 
 ## Considerations
 
