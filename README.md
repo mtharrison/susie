@@ -3,6 +3,8 @@
 
 _This package is still pre 1.0 and APIs may change drastically. Please help out with feedback, suggestions or PRs._
 
+![](http://cl.ly/image/403X2e1R2T29/Untitled3.gif)
+
 This is a plugin that adds simple Server-Sent Events (aka EventSource) capabilities to hapi. It decorates the `reply()` interface with a new method `reply.event()`. You can send individual events as objects, or you can simply pass a stream and some options and SuSiE will make things work as you expect.
 
 You probably already know this but install it with: `npm install --save susie`
