@@ -72,6 +72,8 @@ server.route({
     }
 });
 ```
+![http://cl.ly/d5XT/Screen%20Shot%202015-09-13%20at%2015.50.25.png](http://cl.ly/d5XT/Screen%20Shot%202015-09-13%20at%2015.50.25.png)
+
 Each chunk coming off the stream will be sent as an event. The content of the chunk will be the data parameter. You can provide an optional `event` option and `id` generator. By default the id will be the number of chunks received:
 
 ```javascript
@@ -86,8 +88,6 @@ server.route({
     }
 });
 ```
-
-![http://cl.ly/d5XT/Screen%20Shot%202015-09-13%20at%2015.50.25.png](http://cl.ly/d5XT/Screen%20Shot%202015-09-13%20at%2015.50.25.png)
 
 ## Considerations
 
