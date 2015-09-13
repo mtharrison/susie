@@ -54,21 +54,21 @@ If any of your datum are objects, they will be stringified for you. Make sure to
 A really nice way to provide an EventSource is using a ReadableStream. This is really simple with Susie. Just call `reply.event(stream)`. The stream should not be in `objectMode`:
 
 ```javascript
-var externalSource = new PassThrough();
-var i = 0;
-
-setInterval(function () {
-
-    i++;
-    externalSource.write(i.toString());
-}, 100);
-
 server.route({
     method: 'GET',
-    path: '/',
+    path: '/stream',
     handler: function (request, reply) {
 
-        reply.event(stream);
+        var Readable = require('stream').Readable;
+        var rs = Readable();
+
+        var c = 97;
+        rs._read = function () {
+            rs.push(String.fromCharCode(c++));
+            if (c > 'z'.charCodeAt(0)) rs.push(null);
+        };
+
+        reply.event(rs);
     }
 });
 ```
