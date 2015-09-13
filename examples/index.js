@@ -27,9 +27,9 @@ server.register([require('inert'), require('..')], function (err) {
         handler: function (request, reply) {
 
             var stream = new PassThrough();
-            setInterval(function () { 
+            setInterval(function () {
 
-                stream.write((500 + Math.floor(Math.random() * 100)).toString()); 
+                stream.write((500 + Math.floor(Math.random() * 100)).toString());
             }, 200);
             reply.event(stream, null, { event: 'update' });
         }

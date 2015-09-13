@@ -244,4 +244,35 @@ describe('susie', function () {
             done();
         });
     });
+
+    it('Works with streams in object mode', function (done) {
+
+        var stream = new PassThrough({ objectMode: true });
+
+        setTimeout(function () {
+
+            stream.write({ a: 1, b: '2' });
+            setTimeout(function () {
+
+                stream.write({ a: 3, b: '4' });
+                stream.end();
+            }, 100);
+        }, 100);
+
+        server.route([{
+            method: 'GET',
+            path: '/',
+            handler: function (request, reply) {
+
+                reply.event(stream);
+            }
+        }]);
+
+        server.inject('http://localhost:4000/', function (res) {
+
+            expect(res.headers['content-type']).to.equal('text/event-stream; charset=utf-8');
+            expect(res.payload).to.equal('id: 1\r\ndata: {"a":1,"b":"2"}\r\n\r\nid: 2\r\ndata: {"a":3,"b":"4"}\r\n\r\nevent: end\r\ndata: \r\n\r\n');
+            done();
+        });
+    });
 });
