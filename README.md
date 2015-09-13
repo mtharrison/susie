@@ -85,3 +85,20 @@ server.route({
     }
 });
 ```
+## Considerations
+
+#### How do I finish a SSE stream?
+
+In the SSE spec, it says that when the HTTP response ends, the browser will try to reconnect, sending another request to the endpoint. You may want this. Or you may really want to stop to the events being streamed.
+
+When you call `reply.event(null)` or your stream emits its `end` event, the HTTP response will conclude. However, susie will send one last event to the browser before it closes. You should listen for this `end` event in your client code and close the EventSource, before the browser attempts to reconnect:
+
+```html
+<script>
+    var source = new EventSource('/events');
+    ...
+    source.addEventListener('end', function (event) {
+    
+        this.close();
+    });
+</script>
