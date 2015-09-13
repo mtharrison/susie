@@ -4,7 +4,8 @@
   "description": "Server-sent events with hapi",
   "main": "lib/index.js",
   "scripts": {
-    "test": "lab -a code -t 100 -L"
+    "test": "lab -a code -t 100 -L",
+    "example": "node example"
   },
   "repository": {
     "type": "git",

@@ -51,7 +51,13 @@ server.register([require('inert'), require('..')], function (err) {
         path: '/stream',
         handler: function (request, reply) {
 
-            reply.event(externalSource, { event: 'update' });
+            var j = 0;
+            var generateId = function (chunk) {
+
+                j += 10;
+                return j;
+            };
+            reply.event(externalSource, null, { event: 'update', generateId: generateId });
         }
     });
 

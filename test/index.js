@@ -166,7 +166,7 @@ describe('susie', function () {
             path: '/',
             handler: function (request, reply) {
 
-                reply.event(stream, { event: 'update' });
+                reply.event(stream, null, { event: 'update' });
             }
         }]);
 
@@ -174,6 +174,42 @@ describe('susie', function () {
 
             expect(res.headers['content-type']).to.equal('text/event-stream; charset=utf-8');
             expect(res.payload).to.equal('id: 1\r\ndata: abcdef\r\nevent: update\r\n\r\nid: 2\r\ndata: ghijkl\r\nevent: update\r\n\r\n');
+            done();
+        });
+    });
+
+    it('Allows you to set an id generator function using a stream', function (done) {
+
+        var stream = new PassThrough();
+
+        setTimeout(function () {
+
+            stream.write('abcdef');
+            setTimeout(function () {
+
+                stream.write('ghijkl');
+                stream.end();
+            }, 100);
+        }, 100);
+
+        server.route([{
+            method: 'GET',
+            path: '/',
+            handler: function (request, reply) {
+
+                var generateId = function (chunk) {
+
+                    return new Buffer(chunk).toString('base64');
+                };
+
+                reply.event(stream, null, { event: 'update', generateId: generateId });
+            }
+        }]);
+
+        server.inject('http://localhost:4000/', function (res) {
+
+            expect(res.headers['content-type']).to.equal('text/event-stream; charset=utf-8');
+            expect(res.payload).to.equal('id: YWJjZGVm\r\ndata: abcdef\r\nevent: update\r\n\r\nid: Z2hpamts\r\ndata: ghijkl\r\nevent: update\r\n\r\n');
             done();
         });
     });
