@@ -12,21 +12,35 @@
 
     <script type="text/jsx">
 
+        var stocks = {};
+
         var App = React.createClass({
+            render: function () {
+                var markup = [];
+
+                for (var i in this.props.stocks) {
+                    markup.push(<Stock stock={this.props.stocks[i]}/>)
+                }
+
+                return <div>{markup}</div>;
+            }
+        });
+
+        var Stock = React.createClass({
             render: function () {
 
                 return (
                   <div>
-                    <div className={'stock ' + (this.props.order === 'BUY' ? 'buy' : 'sell')}>
+                    <div className={'stock ' + (this.props.stock.order === 'BUY' ? 'buy' : 'sell')}>
                       <div className="stock-info">
                         <div className="stock-name">
-                            MYSTOCK
+                            {this.props.stock.name}
                         </div>
                         <div className="stock-price">
-                            {this.props.price}
+                            {this.props.stock.price}
                         </div>
                         <div className="stock-order">
-                            {this.props.order}
+                            {this.props.stock.order}
                         </div>
                       </div>
                     </div>
@@ -35,16 +49,20 @@
             }
         });
 
-        var render = function (price) {
-
-            React.render(<App price={price} order={price < 550 ? 'BUY' : 'SELL'}/>, document.getElementById('app'));
+        var render = function () {
+            React.render(<App stocks={stocks}/>, document.getElementById('app'));
         };
 
         var source = new EventSource('/stocks');
 
-        source.addEventListener('update', function (message) {
+        source.addEventListener('stock', function (message) {
+            var data = JSON.parse(message.data);
+            stocks[data.name] = data;
+            render();
+        });
 
-            render(message.data);
+        source.addEventListener('end', function (message) {
+            this.close();
         });
     </script>
 </body>
