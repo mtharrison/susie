@@ -1,8 +1,6 @@
 # SuSiE - Server-Sent Events with hapi
 [![Build Status](https://travis-ci.org/mtharrison/susie.svg)](https://travis-ci.org/mtharrison/susie)
 
-_This package is still pre 1.0 and APIs may change drastically. Please help out with feedback, suggestions or PRs._
-
 ![](http://cl.ly/image/403X2e1R2T29/Untitled3.gif)
 
 _Above example under `/examples`. Start with `npm start`_
