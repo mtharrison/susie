@@ -1,11 +1,12 @@
-var Hapi = require('hapi');
-var Path = require('path');
-var PassThrough = require('stream').PassThrough;
+'use strict';
+const Hapi = require('hapi');
+const Path = require('path');
+const PassThrough = require('stream').PassThrough;
 
-var server = new Hapi.Server();
+const server = new Hapi.Server();
 server.connection({ port: 4000 });
 
-server.register([require('inert'), require('..')], function (err) {
+server.register([require('inert'), require('..')], (err) => {
 
     if (err) {
         throw err;
@@ -26,8 +27,8 @@ server.register([require('inert'), require('..')], function (err) {
         path: '/stocks',
         handler: function (request, reply) {
 
-            var stream = new PassThrough({ objectMode: true });
-            setInterval(function () {
+            const stream = new PassThrough({ objectMode: true });
+            setInterval(() => {
 
                 stream.write({ name: 'BDGRS', price: (500 + Math.floor(Math.random() * 100)).toString(), order: Math.floor(Math.random() * 2) === 1 ? 'BUY' : 'SELL' });
                 stream.write({ name: 'MSHRM', price: (120 + Math.floor(Math.random() * 200)).toString(), order: Math.floor(Math.random() * 2) === 1 ? 'BUY' : 'SELL' });
@@ -37,7 +38,7 @@ server.register([require('inert'), require('..')], function (err) {
         }
     });
 
-    server.start(function (err) {
+    server.start((err) => {
 
         if (err) {
             throw err;

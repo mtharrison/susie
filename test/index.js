@@ -1,39 +1,40 @@
+'use strict';
 // Load modules
 
-var Code = require('code');
-var Hapi = require('hapi');
-var Lab = require('lab');
-var PassThrough = require('stream').PassThrough;
-
-// Declare internals
-
-var internals = {};
+const Code = require('code');
+const Hapi = require('hapi');
+const Lab = require('lab');
+const PassThrough = require('stream').PassThrough;
 
 
 // Test shortcuts
 
-var lab = exports.lab = Lab.script();
-var describe = lab.describe;
-var it = lab.it;
-var expect = Code.expect;
-var beforeEach = lab.beforeEach;
+const lab = exports.lab = Lab.script();
+const describe = lab.describe;
+const it = lab.it;
+const expect = Code.expect;
+const beforeEach = lab.beforeEach;
 
 
-describe('susie', function () {
+describe('susie', () => {
 
-    var server;
+    let server;
 
-    beforeEach(function (done) {
+    beforeEach((done) => {
 
         server = new Hapi.Server();
         server.connection({ port: 4000 });
-        server.register(require('../'), function (err) {
+        server.register(require('../'), (err) => {
+
+            if (err){
+                throw err;
+            }
 
             done();
         });
     });
 
-    it('Sets the proper headers for SSE', function (done) {
+    it('Sets the proper headers for SSE', (done) => {
 
         server.route([{
             method: 'GET',
@@ -44,7 +45,7 @@ describe('susie', function () {
             }
         }]);
 
-        server.inject('http://localhost:4000/', function (res) {
+        server.inject('http://localhost:4000/', (res) => {
 
             expect(res.headers['content-type']).to.equal('text/event-stream; charset=utf-8');
             expect(res.headers['cache-control']).to.equal('no-cache');
@@ -52,7 +53,7 @@ describe('susie', function () {
         });
     });
 
-    it('Allows sending events as objects', function (done) {
+    it('Allows sending events as objects', (done) => {
 
         server.route([{
             method: 'GET',
@@ -66,7 +67,7 @@ describe('susie', function () {
             }
         }]);
 
-        server.inject('http://localhost:4000/', function (res) {
+        server.inject('http://localhost:4000/', (res) => {
 
             expect(res.headers['content-type']).to.equal('text/event-stream; charset=utf-8');
             expect(res.payload).to.equal('data: abcdef\r\n\r\ndata: ghijkl\r\n\r\ndata: mnopqr\r\n\r\nevent: end\r\ndata: \r\n\r\n');
@@ -74,7 +75,7 @@ describe('susie', function () {
         });
     });
 
-    it('Allows sending events as objects with embedded object data', function (done) {
+    it('Allows sending events as objects with embedded object data', (done) => {
 
         server.route([{
             method: 'GET',
@@ -88,7 +89,7 @@ describe('susie', function () {
             }
         }]);
 
-        server.inject('http://localhost:4000/', function (res) {
+        server.inject('http://localhost:4000/', (res) => {
 
             expect(res.headers['content-type']).to.equal('text/event-stream; charset=utf-8');
             expect(res.payload).to.equal('data: {\"a\":\"abcdef\"}\r\n\r\ndata: {\"a\":\"ghijkl\"}\r\n\r\ndata: {\"a\":\"mnopqr\"}\r\n\r\nevent: end\r\ndata: \r\n\r\n');
@@ -96,7 +97,7 @@ describe('susie', function () {
         });
     });
 
-    it('Handles `id` and `event` fields', function (done) {
+    it('Handles `id` and `event` fields', (done) => {
 
         server.route([{
             method: 'GET',
@@ -108,7 +109,7 @@ describe('susie', function () {
             }
         }]);
 
-        server.inject('http://localhost:4000/', function (res) {
+        server.inject('http://localhost:4000/', (res) => {
 
             expect(res.headers['content-type']).to.equal('text/event-stream; charset=utf-8');
             expect(res.payload).to.equal('id: 1\r\nevent: update\r\ndata: abcdef\r\n\r\nevent: end\r\ndata: \r\n\r\n');
@@ -116,14 +117,14 @@ describe('susie', function () {
         });
     });
 
-    it('Allows sending a stream of strings', function (done) {
+    it('Allows sending a stream of strings', (done) => {
 
-        var stream = new PassThrough();
+        const stream = new PassThrough();
 
-        setTimeout(function () {
+        setTimeout(() => {
 
             stream.write('abcdef');
-            setTimeout(function () {
+            setTimeout(() => {
 
                 stream.write('ghijkl');
                 stream.end();
@@ -139,7 +140,7 @@ describe('susie', function () {
             }
         }]);
 
-        server.inject('http://localhost:4000/', function (res) {
+        server.inject('http://localhost:4000/', (res) => {
 
             expect(res.headers['content-type']).to.equal('text/event-stream; charset=utf-8');
             expect(res.payload).to.equal('id: 1\r\ndata: abcdef\r\n\r\nid: 2\r\ndata: ghijkl\r\n\r\nevent: end\r\ndata: \r\n\r\n');
@@ -147,14 +148,14 @@ describe('susie', function () {
         });
     });
 
-    it('Allows sending a stream of buffers', function (done) {
+    it('Allows sending a stream of buffers', (done) => {
 
-        var stream = new PassThrough();
+        const stream = new PassThrough();
 
-        setTimeout(function () {
+        setTimeout(() => {
 
             stream.write(new Buffer('abcdef'));
-            setTimeout(function () {
+            setTimeout(() => {
 
                 stream.write(new Buffer('ghijkl'));
                 stream.end();
@@ -170,7 +171,7 @@ describe('susie', function () {
             }
         }]);
 
-        server.inject('http://localhost:4000/', function (res) {
+        server.inject('http://localhost:4000/', (res) => {
 
             expect(res.headers['content-type']).to.equal('text/event-stream; charset=utf-8');
             expect(res.payload).to.equal('id: 1\r\ndata: abcdef\r\n\r\nid: 2\r\ndata: ghijkl\r\n\r\nevent: end\r\ndata: \r\n\r\n');
@@ -178,14 +179,14 @@ describe('susie', function () {
         });
     });
 
-    it('Allows you to set an event type when using a stream', function (done) {
+    it('Allows you to set an event type when using a stream', (done) => {
 
-        var stream = new PassThrough();
+        const stream = new PassThrough();
 
-        setTimeout(function () {
+        setTimeout(() => {
 
             stream.write('abcdef');
-            setTimeout(function () {
+            setTimeout(() => {
 
                 stream.write('ghijkl');
                 stream.end();
@@ -201,7 +202,7 @@ describe('susie', function () {
             }
         }]);
 
-        server.inject('http://localhost:4000/', function (res) {
+        server.inject('http://localhost:4000/', (res) => {
 
             expect(res.headers['content-type']).to.equal('text/event-stream; charset=utf-8');
             expect(res.payload).to.equal('id: 1\r\ndata: abcdef\r\nevent: update\r\n\r\nid: 2\r\ndata: ghijkl\r\nevent: update\r\n\r\nevent: end\r\ndata: \r\n\r\n');
@@ -209,14 +210,14 @@ describe('susie', function () {
         });
     });
 
-    it('Allows you to set an id generator function using a stream', function (done) {
+    it('Allows you to set an id generator function using a stream', (done) => {
 
-        var stream = new PassThrough();
+        const stream = new PassThrough();
 
-        setTimeout(function () {
+        setTimeout(() => {
 
             stream.write('abcdef');
-            setTimeout(function () {
+            setTimeout(() => {
 
                 stream.write('ghijkl');
                 stream.end();
@@ -228,7 +229,7 @@ describe('susie', function () {
             path: '/',
             handler: function (request, reply) {
 
-                var generateId = function (chunk) {
+                const generateId = function (chunk) {
 
                     return chunk.toString('base64');
                 };
@@ -237,7 +238,7 @@ describe('susie', function () {
             }
         }]);
 
-        server.inject('http://localhost:4000/', function (res) {
+        server.inject('http://localhost:4000/', (res) => {
 
             expect(res.headers['content-type']).to.equal('text/event-stream; charset=utf-8');
             expect(res.payload).to.equal('id: YWJjZGVm\r\ndata: abcdef\r\nevent: update\r\n\r\nid: Z2hpamts\r\ndata: ghijkl\r\nevent: update\r\n\r\nevent: end\r\ndata: \r\n\r\n');
@@ -245,14 +246,14 @@ describe('susie', function () {
         });
     });
 
-    it('Works with streams in object mode', function (done) {
+    it('Works with streams in object mode', (done) => {
 
-        var stream = new PassThrough({ objectMode: true });
+        const stream = new PassThrough({ objectMode: true });
 
-        setTimeout(function () {
+        setTimeout(() => {
 
             stream.write({ a: 1, b: '2' });
-            setTimeout(function () {
+            setTimeout(() => {
 
                 stream.write({ a: 3, b: '4' });
                 stream.end();
@@ -268,7 +269,7 @@ describe('susie', function () {
             }
         }]);
 
-        server.inject('http://localhost:4000/', function (res) {
+        server.inject('http://localhost:4000/', (res) => {
 
             expect(res.headers['content-type']).to.equal('text/event-stream; charset=utf-8');
             expect(res.payload).to.equal('id: 1\r\ndata: {"a":1,"b":"2"}\r\n\r\nid: 2\r\ndata: {"a":3,"b":"4"}\r\n\r\nevent: end\r\ndata: \r\n\r\n');
