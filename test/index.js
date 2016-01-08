@@ -1,4 +1,5 @@
 'use strict';
+
 // Load modules
 
 const Code = require('code');
