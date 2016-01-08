@@ -1,6 +1,6 @@
 {
   "name": "susie",
-  "version": "1.0.1",
+  "version": "2.0.0",
   "description": "Server-sent events with hapi",
   "main": "lib/index.js",
   "scripts": {
@@ -10,6 +10,9 @@
   "repository": {
     "type": "git",
     "url": "git+https://github.com/mtharrison/susie.git"
+  },
+  "engines": {
+    "node": ">=4.0.0"
   },
   "keywords": [
     "sse",
@@ -25,9 +28,9 @@
   },
   "homepage": "https://github.com/mtharrison/susie#readme",
   "devDependencies": {
-    "code": "^2.0.0",
-    "hapi": "^11.0.0",
-    "inert": "^3.0.1",
-    "lab": "^8.0.0"
+    "code": "2.x.x",
+    "hapi": "12.x.x",
+    "inert": "3.x.x",
+    "lab": "8.x.x"
   }
 }

@@ -50,6 +50,7 @@ describe('susie', () => {
 
             expect(res.headers['content-type']).to.equal('text/event-stream; charset=utf-8');
             expect(res.headers['cache-control']).to.equal('no-cache');
+            expect(res.headers['content-encoding']).to.equal('identity');
             done();
         });
     });
