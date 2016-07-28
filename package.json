@@ -29,7 +29,7 @@
   "homepage": "https://github.com/mtharrison/susie#readme",
   "devDependencies": {
     "code": "2.x.x",
-    "hapi": "12.x.x",
+    "hapi": "13.5.1",
     "inert": "3.x.x",
     "lab": "10.x.x"
   }
