@@ -5,7 +5,7 @@
 
 _Above example under `/examples`. Start with `npm start`_
 
-This is a plugin that adds simple Server-Sent Events (aka EventSource) capabilities to hapi. It decorates the `reply()` interface with a new method `reply.event()`. You can send individual events as objects, or you can simply pass a stream and some options and SuSiE will make things work as you expect.
+This is a plugin that adds simple Server-Sent Events (aka EventSource) capabilities to hapi. It decorates the `toolkit` with a new method `h.event()`. You can send individual events as objects, or you can simply pass a stream and some options and SuSiE will make things work as you expect.
 
 You probably already know this but install it with: `npm install --save susie`
 
@@ -14,40 +14,40 @@ You probably already know this but install it with: `npm install --save susie`
 First load and register the plugin:
 
 ```javascript
-server.register(require('susie'), function (err) {
-    ...
-});
+await server.register(require('susie'));
 ```
 
 #### With event objects
 
-In a route handler you can now call `reply.event()` to start an SSE response:
+In a route handler you can now call `h.event()` to start an SSE response:
 
 ```javascript
 server.route({
     method: 'GET',
     path: '/',
-    handler: function (request, reply) {
+    handler: function (request, h) {
 
-        reply.event({ data: 'my data' });
+        return h.event({ data: 'my data' });
     }
 });
 ```
 
-The first time you call `reply.event()`, appropriate HTTP response headers will be sent, along with your first event. Subsequent calls to `reply.event()` will send more events.
+The first time you call `h.event()`, appropriate HTTP response headers will be sent, along with your first event. Subsequent calls to `h.event()` will send more events.
 
 ```javascript
 server.route({
     method: 'GET',
     path: '/',
-    handler: function (request, reply) {
+    handler: function (request, h) {
 
-        reply.event({ id: 1, data: 'my data' });
+        const response = h.event({ id: 1, data: 'my data' });
 
         setTimeout(function () {
 
-            reply.event({ id: 2, data: { a: 1 } }); // object datum
+            h.event({ id: 2, data: { a: 1 } }); // object datum
         }, 500);
+
+        return response;
     }
 });
 ```
@@ -55,13 +55,13 @@ If any of your datum are objects, they will be stringified for you. Make sure to
 
 #### With a readable stream
 
-A really nice way to provide an EventSource is using a ReadableStream. This is really simple with SuSiE. Just call `reply.event(stream)`:
+A really nice way to provide an EventSource is using a ReadableStream. This is really simple with SuSiE. Just call `h.event(stream)`:
 
 ```javascript
 server.route({
     method: 'GET',
     path: '/',
-    handler: function (request, reply) {
+    handler: function (request, h) {
 
         var Readable = require('stream').Readable;
         var rs = Readable();
@@ -72,7 +72,7 @@ server.route({
             if (c > 'z'.charCodeAt(0)) rs.push(null);
         };
 
-        reply.event(rs);
+        return h.event(rs);
     }
 });
 ```
@@ -84,11 +84,11 @@ Each chunk coming off the stream will be sent as an event. The content of the ch
 server.route({
     method: 'GET',
     path: '/',
-    handler: function (request, reply) {
+    handler: function (request, h) {
 
         var i = 0;
         var generateId = function (chunk) { return i += 10; }
-        reply.event(stream, null, { event: 'update', generateId: generateId });
+        return h.event(stream, null, { event: 'update', generateId });
     }
 });
 ```
@@ -102,14 +102,14 @@ If the stream is in `objectMode`, each object that comes off the stream will be 
 
 In the SSE spec, it says that when the HTTP response ends, the browser will try to reconnect, sending another request to the endpoint. You may want this. Or you may really want to stop to the events being streamed altogether.
 
-When you call `reply.event(null)` or your stream emits its `end` event, the HTTP response will conclude. However, SuSiE will send one last event to the browser before it closes. You should listen for this `end` event in your client code and close the EventSource, before the browser attempts to reconnect:
+When you call `h.event(null)` or your stream emits its `end` event, the HTTP response will conclude. However, SuSiE will send one last event to the browser before it closes. You should listen for this `end` event in your client code and close the EventSource, before the browser attempts to reconnect:
 
 ```html
 <script>
     var source = new EventSource('/events');
     ...
     source.addEventListener('end', function (event) {
-    
+
         this.close();
     });
 </script>
