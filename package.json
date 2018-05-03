@@ -1,6 +1,6 @@
 {
   "name": "susie",
-  "version": "2.0.0",
+  "version": "3.0.0",
   "description": "Server-sent events with hapi",
   "main": "lib/index.js",
   "scripts": {
