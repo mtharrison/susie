@@ -21,105 +21,95 @@ describe('susie', () => {
 
     let server;
 
-    beforeEach((done) => {
+    beforeEach(async () => {
 
-        server = new Hapi.Server();
-        server.connection({ port: 4000 });
-        server.register(require('../'), (err) => {
-
-            if (err){
-                throw err;
-            }
-
-            done();
-        });
+        server = Hapi.server({ port: 4000 });
+        await server.register(require('../'));
     });
 
-    it('Sets the proper headers for SSE', (done) => {
+    it('Sets the proper headers for SSE', async () => {
+
+        server.route({
+            method: 'GET',
+            path: '/',
+            handler: function (request, h) {
+
+                return h.event(null);
+            }
+        });
+
+        const res = await server.inject('http://localhost:4000/');
+
+        expect(res.headers['content-type']).to.equal('text/event-stream; charset=utf-8');
+        expect(res.headers['cache-control']).to.equal('no-cache');
+        expect(res.headers['content-encoding']).to.equal('identity');
+    });
+
+    it('Allows sending events as objects', async () => {
+
+        server.route({
+            method: 'GET',
+            path: '/',
+            handler: function (request, h) {
+
+                const response = h.event({ data: 'abcdef' });
+                h.event({ data: 'ghijkl' });
+                h.event({ data: 'mnopqr' });
+                h.event(null);
+
+                return response;
+            }
+        });
+
+        const res = await server.inject('http://localhost:4000/');
+
+        expect(res.headers['content-type']).to.equal('text/event-stream; charset=utf-8');
+        expect(res.payload).to.equal('data: abcdef\r\n\r\ndata: ghijkl\r\n\r\ndata: mnopqr\r\n\r\nevent: end\r\ndata: \r\n\r\n');
+    });
+
+    it('Allows sending events as objects with embedded object data', async () => {
 
         server.route([{
             method: 'GET',
             path: '/',
-            handler: function (request, reply) {
+            handler: function (request, h) {
 
-                reply.event(null);
+                const response = h.event({ data: { a: 'abcdef' } });
+                h.event({ data: { a: 'ghijkl' } });
+                h.event({ data: { a: 'mnopqr' } });
+                h.event(null);
+
+                return response;
             }
         }]);
 
-        server.inject('http://localhost:4000/', (res) => {
+        const res = await server.inject('http://localhost:4000/');
 
-            expect(res.headers['content-type']).to.equal('text/event-stream; charset=utf-8');
-            expect(res.headers['cache-control']).to.equal('no-cache');
-            expect(res.headers['content-encoding']).to.equal('identity');
-            done();
-        });
+        expect(res.headers['content-type']).to.equal('text/event-stream; charset=utf-8');
+        expect(res.payload).to.equal('data: {\"a\":\"abcdef\"}\r\n\r\ndata: {\"a\":\"ghijkl\"}\r\n\r\ndata: {\"a\":\"mnopqr\"}\r\n\r\nevent: end\r\ndata: \r\n\r\n');
     });
 
-    it('Allows sending events as objects', (done) => {
+    it('Handles `id` and `event` fields', async () => {
 
         server.route([{
             method: 'GET',
             path: '/',
-            handler: function (request, reply) {
+            handler: function (request, h) {
 
-                reply.event({ data: 'abcdef' });
-                reply.event({ data: 'ghijkl' });
-                reply.event({ data: 'mnopqr' });
-                reply.event(null);
+                const response = h.event({ id: 1, event: 'update', data: 'abcdef' });
+                h.event(null);
+
+                return response;
             }
         }]);
 
-        server.inject('http://localhost:4000/', (res) => {
+        const res = await server.inject('http://localhost:4000/');
 
-            expect(res.headers['content-type']).to.equal('text/event-stream; charset=utf-8');
-            expect(res.payload).to.equal('data: abcdef\r\n\r\ndata: ghijkl\r\n\r\ndata: mnopqr\r\n\r\nevent: end\r\ndata: \r\n\r\n');
-            done();
-        });
+        expect(res.headers['content-type']).to.equal('text/event-stream; charset=utf-8');
+        expect(res.payload).to.equal('id: 1\r\nevent: update\r\ndata: abcdef\r\n\r\nevent: end\r\ndata: \r\n\r\n');
     });
 
-    it('Allows sending events as objects with embedded object data', (done) => {
-
-        server.route([{
-            method: 'GET',
-            path: '/',
-            handler: function (request, reply) {
-
-                reply.event({ data: { a: 'abcdef' } });
-                reply.event({ data: { a: 'ghijkl' } });
-                reply.event({ data: { a: 'mnopqr' } });
-                reply.event(null);
-            }
-        }]);
-
-        server.inject('http://localhost:4000/', (res) => {
-
-            expect(res.headers['content-type']).to.equal('text/event-stream; charset=utf-8');
-            expect(res.payload).to.equal('data: {\"a\":\"abcdef\"}\r\n\r\ndata: {\"a\":\"ghijkl\"}\r\n\r\ndata: {\"a\":\"mnopqr\"}\r\n\r\nevent: end\r\ndata: \r\n\r\n');
-            done();
-        });
-    });
-
-    it('Handles `id` and `event` fields', (done) => {
-
-        server.route([{
-            method: 'GET',
-            path: '/',
-            handler: function (request, reply) {
-
-                reply.event({ id: 1, event: 'update', data: 'abcdef' });
-                reply.event(null);
-            }
-        }]);
-
-        server.inject('http://localhost:4000/', (res) => {
-
-            expect(res.headers['content-type']).to.equal('text/event-stream; charset=utf-8');
-            expect(res.payload).to.equal('id: 1\r\nevent: update\r\ndata: abcdef\r\n\r\nevent: end\r\ndata: \r\n\r\n');
-            done();
-        });
-    });
-
-    it('Allows sending a stream of strings', (done) => {
+    it('Allows sending a stream of strings', async () => {
 
         const stream = new PassThrough();
 
@@ -136,21 +126,19 @@ describe('susie', () => {
         server.route([{
             method: 'GET',
             path: '/',
-            handler: function (request, reply) {
+            handler: function (request, h) {
 
-                reply.event(stream);
+                return h.event(stream);
             }
         }]);
 
-        server.inject('http://localhost:4000/', (res) => {
+        const res = await server.inject('http://localhost:4000/');
 
-            expect(res.headers['content-type']).to.equal('text/event-stream; charset=utf-8');
-            expect(res.payload).to.equal('id: 1\r\ndata: abcdef\r\n\r\nid: 2\r\ndata: ghijkl\r\n\r\nevent: end\r\ndata: \r\n\r\n');
-            done();
-        });
+        expect(res.headers['content-type']).to.equal('text/event-stream; charset=utf-8');
+        expect(res.payload).to.equal('id: 1\r\ndata: abcdef\r\n\r\nid: 2\r\ndata: ghijkl\r\n\r\nevent: end\r\ndata: \r\n\r\n');
     });
 
-    it('Allows sending a stream of buffers', (done) => {
+    it('Allows sending a stream of buffers', async () => {
 
         const stream = new PassThrough();
 
@@ -167,21 +155,19 @@ describe('susie', () => {
         server.route([{
             method: 'GET',
             path: '/',
-            handler: function (request, reply) {
+            handler: function (request, h) {
 
-                reply.event(stream);
+                return h.event(stream);
             }
         }]);
 
-        server.inject('http://localhost:4000/', (res) => {
+        const res = await server.inject('http://localhost:4000/');
 
-            expect(res.headers['content-type']).to.equal('text/event-stream; charset=utf-8');
-            expect(res.payload).to.equal('id: 1\r\ndata: abcdef\r\n\r\nid: 2\r\ndata: ghijkl\r\n\r\nevent: end\r\ndata: \r\n\r\n');
-            done();
-        });
+        expect(res.headers['content-type']).to.equal('text/event-stream; charset=utf-8');
+        expect(res.payload).to.equal('id: 1\r\ndata: abcdef\r\n\r\nid: 2\r\ndata: ghijkl\r\n\r\nevent: end\r\ndata: \r\n\r\n');
     });
 
-    it('Allows you to set an event type when using a stream', (done) => {
+    it('Allows you to set an event type when using a stream', async () => {
 
         const stream = new PassThrough();
 
@@ -198,21 +184,19 @@ describe('susie', () => {
         server.route([{
             method: 'GET',
             path: '/',
-            handler: function (request, reply) {
+            handler: function (request, h) {
 
-                reply.event(stream, null, { event: 'update' });
+                return h.event(stream, null, { event: 'update' });
             }
         }]);
 
-        server.inject('http://localhost:4000/', (res) => {
+        const res = await server.inject('http://localhost:4000/');
 
-            expect(res.headers['content-type']).to.equal('text/event-stream; charset=utf-8');
-            expect(res.payload).to.equal('id: 1\r\ndata: abcdef\r\nevent: update\r\n\r\nid: 2\r\ndata: ghijkl\r\nevent: update\r\n\r\nevent: end\r\ndata: \r\n\r\n');
-            done();
-        });
+        expect(res.headers['content-type']).to.equal('text/event-stream; charset=utf-8');
+        expect(res.payload).to.equal('id: 1\r\ndata: abcdef\r\nevent: update\r\n\r\nid: 2\r\ndata: ghijkl\r\nevent: update\r\n\r\nevent: end\r\ndata: \r\n\r\n');
     });
 
-    it('Allows you to set an id generator function using a stream', (done) => {
+    it('Allows you to set an id generator function using a stream', async () => {
 
         const stream = new PassThrough();
 
@@ -229,26 +213,24 @@ describe('susie', () => {
         server.route([{
             method: 'GET',
             path: '/',
-            handler: function (request, reply) {
+            handler: function (request, h) {
 
                 const generateId = function (chunk) {
 
                     return chunk.toString('base64');
                 };
 
-                reply.event(stream, null, { event: 'update', generateId: generateId });
+                return h.event(stream, null, { event: 'update', generateId });
             }
         }]);
 
-        server.inject('http://localhost:4000/', (res) => {
+        const res = await server.inject('http://localhost:4000/');
 
-            expect(res.headers['content-type']).to.equal('text/event-stream; charset=utf-8');
-            expect(res.payload).to.equal('id: YWJjZGVm\r\ndata: abcdef\r\nevent: update\r\n\r\nid: Z2hpamts\r\ndata: ghijkl\r\nevent: update\r\n\r\nevent: end\r\ndata: \r\n\r\n');
-            done();
-        });
+        expect(res.headers['content-type']).to.equal('text/event-stream; charset=utf-8');
+        expect(res.payload).to.equal('id: YWJjZGVm\r\ndata: abcdef\r\nevent: update\r\n\r\nid: Z2hpamts\r\ndata: ghijkl\r\nevent: update\r\n\r\nevent: end\r\ndata: \r\n\r\n');
     });
 
-    it('Works with streams in object mode', (done) => {
+    it('Works with streams in object mode', async () => {
 
         const stream = new PassThrough({ objectMode: true });
 
@@ -265,17 +247,15 @@ describe('susie', () => {
         server.route([{
             method: 'GET',
             path: '/',
-            handler: function (request, reply) {
+            handler: function (request, h) {
 
-                reply.event(stream);
+                return h.event(stream);
             }
         }]);
 
-        server.inject('http://localhost:4000/', (res) => {
+        const res = await server.inject('http://localhost:4000/');
 
-            expect(res.headers['content-type']).to.equal('text/event-stream; charset=utf-8');
-            expect(res.payload).to.equal('id: 1\r\ndata: {"a":1,"b":"2"}\r\n\r\nid: 2\r\ndata: {"a":3,"b":"4"}\r\n\r\nevent: end\r\ndata: \r\n\r\n');
-            done();
-        });
+        expect(res.headers['content-type']).to.equal('text/event-stream; charset=utf-8');
+        expect(res.payload).to.equal('id: 1\r\ndata: {"a":1,"b":"2"}\r\n\r\nid: 2\r\ndata: {"a":3,"b":"4"}\r\n\r\nevent: end\r\ndata: \r\n\r\n');
     });
 });
